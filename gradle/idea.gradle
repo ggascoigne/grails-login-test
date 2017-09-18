@@ -1,0 +1,208 @@
+apply plugin: 'idea'
+
+def dir = scriptSource.resource.file.parentFile
+
+//noinspection GroovyAssignabilityCheck
+idea {
+  project {
+    jdkName '1.8'
+    ipr {
+      withXml {provider ->
+        def root = provider.asNode()
+        root.component.find {it.@name == 'ProjectRootManager'}.@languageLevel = 'JDK_1_8'
+        root.component.find {it.@name == 'VcsDirectoryMappings'}.mapping.@vcs = 'Git'
+        root.append(parse(file("${dir}/projectCodeStyle.xml") as File))
+
+        addJsLanguageSettings(root)
+        addEsLintSettings(root)
+        addCopyright(root)
+        addGradleSettings(root)
+        addInspectionSettings(root)
+      }
+    }
+  }
+}
+
+private addJsLanguageSettings(root) {
+  // use ES6 & JSX by default
+  if (!hasComponent(root, 'JavaScriptSettings')) {
+    root.append(parse(
+        '''<component name="JavaScriptSettings">
+           <option name="languageLevel" value="JSX" />
+        </component>'''))
+  }
+}
+
+private addEsLintSettings(root) {
+  // Configure IDEA to use the JS Standard formatting and to use the eslint plugin to check the style rules.
+
+  // Scan the project looking for either a package.json in the root project of in a submodule
+  // Then look for the standard package there
+  def finder = new FileNameFinder()
+  // can't do a full tree search here since package.json shows up all over the place
+  def files = finder.getFileNames("$projectDir", 'package.json') +
+      finder.getFileNames("$projectDir", '*/package.json')
+  def uiModuleName = files ? files[0] - "${projectDir}/" - 'package.json' : ''
+
+  if (file("${projectDir}/${uiModuleName}node_modules/standard/eslintrc.json").exists()) {
+    if (!hasComponent(root, 'ESLintProjectComponent')) {
+      root.append(parse(
+          """<component name="ESLintProjectComponent">
+              <option name="eslintRcFile" value="\$PROJECT_DIR\$/${uiModuleName}node_modules/standard/eslintrc.json"/>
+              <option name="eslintExecutable" value="\$PROJECT_DIR\$/${uiModuleName}node_modules/standard/node_modules/eslint/bin/eslint.js"/>
+              <option name="nodeInterpreter" value="${getNodePath()}"/>
+              <option name="treatAllEslintIssuesAsWarnings" value="true"/>
+              <option name="pluginEnabled" value="true"/>
+            </component>
+          """))
+    }
+  }
+}
+
+private addCopyright(root) {
+  def copyrightManager = root.component.find {it.'@name' == 'CopyrightManager'}
+  copyrightManager.@default = "ASL2"
+  def aslCopyright = copyrightManager.copyright.find {it.option.find {it.@name == "myName"}?.@value == "ASL2"}
+  if (aslCopyright == null) {
+    copyrightManager.append(parse(
+        '''<copyright>
+          <option name="notice"
+                  value="Copyright 2017 Guy Gascoigne-Piggford.&#10;&#10;Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);&#10;you may not use this file except in compliance with the License.&#10;You may obtain a copy of the License at&#10;&#10;   http://www.apache.org/licenses/LICENSE-2.0&#10;&#10;Unless required by applicable law or agreed to in writing, software&#10;distributed under the License is distributed on an &quot;AS IS&quot; BASIS,&#10;WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.&#10;See the License for the specific language governing permissions and&#10;limitations under the License."/>
+          <option name="keyword" value="Copyright"/>
+          <option name="allowReplaceKeyword" value=""/>
+          <option name="myName" value="ASL2"/>
+          <option name="myLocal" value="true"/>
+        </copyright>'''))
+  }
+}
+
+private addGradleSettings(root) {
+  // Load gradle projects by default - note that this can be a bit slow on the first pass!
+  if (!hasComponent(root, 'GradleSettings')) {
+    root.append(parse(
+        '''<component name="GradleSettings">
+          <option name="linkedExternalProjectsSettings">
+            <GradleProjectSettings>
+              <option name="createEmptyContentRootDirectories" value="true"/>
+              <option name="distributionType" value="DEFAULT_WRAPPED"/>
+              <option name="externalProjectPath" value="$PROJECT_DIR$"/>
+              <option name="modules">
+                <set>
+                  <option value="$PROJECT_DIR$"/>
+                </set>
+              </option>
+              <option name="useAutoImport" value="true"/>
+            </GradleProjectSettings>
+          </option>
+        </component>
+      '''))
+  }
+}
+
+private addInspectionSettings(root) {
+  // load up personal inspection preferences
+  def inspections = root.component.find {it.@name == 'InspectionProjectProfileManager'}
+  if (inspections == null) {
+    root.append(parse(
+        '''<component name="InspectionProjectProfileManager">
+              <profile version="1.0">
+                <option name="myName" value="Project Default" />
+              </profile>
+              <version value="1.0" />
+            </component>
+          '''))
+    inspections = root.component.find {it.@name == 'InspectionProjectProfileManager'}
+  }
+
+  def profile = inspections.profile[0]
+  parse(
+      '''<dummy>
+        <inspection_tool class="AssignmentToCatchBlockParameter" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="AssignmentToForLoopParameter" enabled="true" level="WARNING" enabled_by_default="true">
+          <option name="m_checkForeachParameters" value="false" />
+        </inspection_tool>
+        <inspection_tool class="ChainedEquality" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="ClassInTopLevelPackage" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="ClassNameDiffersFromFileName" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="ClassReferencesSubclass" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="CloneInNonCloneableClass" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="CloneableImplementsClone" enabled="true" level="WARNING" enabled_by_default="true">
+          <option name="m_ignoreCloneableDueToInheritance" value="false" />
+        </inspection_tool>
+        <inspection_tool class="InstanceofChain" enabled="true" level="WARNING" enabled_by_default="true">
+          <option name="ignoreInstanceofOnLibraryClasses" value="false" />
+        </inspection_tool>
+        <inspection_tool class="InstanceofThis" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="LiteralAsArgToStringEquals" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="MethodOnlyUsedFromInnerClass" enabled="true" level="WARNING" enabled_by_default="true">
+          <option name="ignoreMethodsAccessedFromAnonymousClass" value="false" />
+          <option name="ignoreStaticMethodsFromNonStaticInnerClass" value="false" />
+          <option name="onlyReportStaticMethods" value="false" />
+        </inspection_tool>
+        <inspection_tool class="MissortedModifiers" enabled="true" level="WARNING" enabled_by_default="true">
+          <option name="m_requireAnnotationsFirst" value="true" />
+        </inspection_tool>
+        <inspection_tool class="ProtectedMemberInFinalClass" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="PublicConstructorInNonPublicClass" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="ReplaceAssignmentWithOperatorAssignment" enabled="true" level="WARNING" enabled_by_default="true">
+          <option name="ignoreLazyOperators" value="true" />
+          <option name="ignoreObscureOperators" value="false" />
+        </inspection_tool>
+        <inspection_tool class="UtilityClassWithPublicConstructor" enabled="true" level="WARNING" enabled_by_default="true" />
+        <inspection_tool class="UtilityClassWithoutPrivateConstructor" enabled="true" level="WARNING" enabled_by_default="true">
+          <option name="ignorableAnnotations">
+            <value />
+          </option>
+          <option name="ignoreClassesWithOnlyMain" value="false" />
+        </inspection_tool>
+        <inspection_tool class="InjectOfNonPublicMember" level="WARNING" enabled="false" />
+        <inspection_tool class="JavaDoc" enabled="false" level="WARNING" enabled_by_default="false" />
+        <inspection_tool class="MissingOverrideAnnotation" enabled="true" level="WARNING" enabled_by_default="true">
+          <option name="ignoreObjectMethods" value="true" />
+          <option name="ignoreAnonymousClassMethods" value="false" />
+        </inspection_tool>
+        <inspection_tool class="SimplifiableIfStatement" enabled="false" level="WARNING" enabled_by_default="false" />
+        <inspection_tool class="TrivialIf" enabled="false" level="WARNING" enabled_by_default="false" />
+        <inspection_tool class="UNUSED_SYMBOL" level="WARNING" enabled="true">
+          <option name="INJECTION_ANNOS">
+            <value>
+              <list size="2">
+                <item index="0" class="java.lang.String" itemvalue="com.google.inject.Inject" />
+                <item index="1" class="java.lang.String" itemvalue="org.junit.Test" />
+              </list>
+            </value>
+          </option>
+        </inspection_tool>
+        <inspection_tool class="UnterminatedStatementJS" enabled="false" level="WARNING" enabled_by_default="false">
+          <option name="ignoreSemicolonAtEndOfBlock" value="true" />
+        </inspection_tool>
+        <inspection_tool class="unusedMerged" />
+      </dummy>''').children().each {
+    profile.append it
+  }
+}
+
+static def hasComponent(root, name) {
+  root.component.find {it.@name == name}
+}
+
+static def parse(File inputFile) {
+  new XmlParser().parse(inputFile)
+}
+
+static def parse(String input) {
+  new XmlParser().parseText(input)
+}
+
+project.tasks.create(name: 'nukeIdea', group: 'IDE', dependsOn: 'cleanIdeaWorkspace') {
+  dependsOn getTasksByName("cleanIdea", true)
+  description = 'Cleans up all idea project files, including the user\'s workspace file.'
+}
+
+static def getNodePath() {
+  if (System.properties['os.name'].toLowerCase().contains('windows')) {
+    "where node.exe".execute().text.trim()
+  } else {
+    return "which node".execute().text.trim()
+  }
+}
