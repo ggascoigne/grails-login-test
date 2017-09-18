@@ -22,7 +22,7 @@ class App extends Component {
   }
 
   componentDidMount () {
-    fetch(SERVER_URL + '/application')
+    fetch(SERVER_URL + '/api/application')
       .then(r => r.json())
       .then(json => this.setState({serverInfo: json}))
       .catch(error => console.error('Error connecting to server: ' + error))
@@ -60,7 +60,7 @@ class App extends Component {
                 <ul>
                   {serverInfo.controllers ? serverInfo.controllers.map(controller => {
                     return <li key={controller.name}><a
-                      href={SERVER_URL + controller.logicalPropertyName}>{controller.name}</a></li>
+                      href={SERVER_URL + 'api/' + controller.logicalPropertyName}>{controller.name}</a></li>
                   }) : null}
                 </ul>
               </div>

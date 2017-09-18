@@ -37,3 +37,10 @@ and in another terminal
 $ cd client
 $ yarn start
 ```
+
+## Creation
+
+```bash
+$ grails create-app com.wyrdrune.loginTest --profile=org.grails.profiles:react:2.0.3
+
+```
