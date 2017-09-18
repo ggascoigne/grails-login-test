@@ -1,14 +1,14 @@
-import React from 'react';
-import { Navbar, NavDropdown, Nav, MenuItem } from 'react-bootstrap';
+import React from 'react'
+import { MenuItem, Nav, Navbar, NavDropdown } from 'react-bootstrap'
+import 'whatwg-fetch'
 
-import grailsLogo from './images/grails-cupsonly-logo-white.svg';
-import 'whatwg-fetch';
+import grailsLogo from './images/grails-cupsonly-logo-white.svg'
 
-function AppNav({serverInfo, clientInfo}) {
+function AppNav ({serverInfo, clientInfo}) {
 
-  const {environment, appprofile, appversion, grailsversion, reloadingagentenabled, artefacts, plugins} = serverInfo;
+  const {environment, appprofile, appversion, grailsversion, reloadingagentenabled, artefacts, plugins} = serverInfo
 
-  return(
+  return (
     <Navbar style={{backgroundColor: '#4D8618', backgroundImage: 'none', borderRadius: 0}}>
       <Navbar.Header>
         <Navbar.Brand>
@@ -48,8 +48,8 @@ function AppNav({serverInfo, clientInfo}) {
           </NavDropdown>
         </Nav>
       </Navbar.Collapse>
-    </Navbar>);
+    </Navbar>)
 
 }
 
-export default AppNav;
+export default AppNav
