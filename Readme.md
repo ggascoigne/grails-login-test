@@ -42,5 +42,6 @@ $ yarn start
 
 ```bash
 $ grails create-app com.wyrdrune.loginTest --profile=org.grails.profiles:react:2.0.3
+$ grails s2-quickstart com.wyrdrune User Role
 
 ```

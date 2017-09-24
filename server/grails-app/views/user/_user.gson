@@ -1,0 +1,10 @@
+import com.wyrdrune.Role
+import com.wyrdrune.User
+
+model {
+  User user
+}
+
+json g.render(user, [resolveTemplate: false, excludes: ['password']]) {
+  roles user.getAuthorities().collect{ Role role -> role.authority}
+}

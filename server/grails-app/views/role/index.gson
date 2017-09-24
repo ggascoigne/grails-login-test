@@ -1,0 +1,8 @@
+import com.wyrdrune.Role
+
+model {
+	Iterable<Role> roleList
+}
+
+json tmpl.role(roleList ?: [])
+

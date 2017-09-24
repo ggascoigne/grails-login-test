@@ -15,7 +15,6 @@ buildscript {
 version "0.1"
 group "com.wyrdrune"
 
-apply plugin: "eclipse"
 apply plugin: "idea"
 apply plugin: "war"
 apply plugin: "org.grails.grails-web"
@@ -59,9 +58,27 @@ dependencies {
   testCompile "org.grails:grails-web-testing-support"
   testRuntime "org.seleniumhq.selenium:selenium-htmlunit-driver:2.47.1"
   testRuntime "net.sourceforge.htmlunit:htmlunit:2.18"
+
+  compile 'org.grails.plugins:spring-security-core:3.3.0.M1'
+  compile "org.grails.plugins:spring-security-rest:2.0.0.M2"
+
 }
 
 bootRun {
   jvmArgs('-Dspring.output.ansi.enabled=always')
   addResources = true
+}
+
+test {
+  testLogging {
+    events "failed"
+    exceptionFormat "full"
+  }
+}
+
+integrationTest {
+  testLogging {
+    events "failed"
+    exceptionFormat "full"
+  }
 }
