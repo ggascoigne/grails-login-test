@@ -1,6 +1,6 @@
 # Grails & React
 
-Test project to investigate spring-security, spring-security-rest, jet and grails.
+Test project to investigate spring-security, spring-security-rest, JWT and grails.
 
 ## Current State ##
 
