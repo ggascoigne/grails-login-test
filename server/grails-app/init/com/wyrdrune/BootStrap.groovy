@@ -1,41 +1,33 @@
 package com.wyrdrune
 
-import grails.util.Environment
-
 class BootStrap {
 
   def init = {servletContext ->
-    environments {
-      production {
-        generateDefaultData(servletContext)
-      }
-
-      development {
-        generateDefaultData(servletContext)
-      }
-
-      test {
-        // start the tests with a clean slate
+    def authorities = ['ROLE_ADMIN', 'ROLE_USER']
+    authorities.each {String authority ->
+      if (!Role.findByAuthority(authority)) {
+        new Role(authority: authority).save()
       }
     }
-  }
 
-  def generateDefaultData(servletContext) {
-    def adminRole = new Role(authority: 'ROLE_ADMIN').save()
-    def userRole = new Role(authority: 'ROLE_USER').save()
+    if (!User.findByUsername('admin')) {
+      def u = new User(username: 'admin', password: 'password', roles: authorities)
+      u.save()
+    }
 
-    def testUser = new User(username: 'me', password: 'password').save()
-
-    UserRole.create testUser, adminRole
+    if (!User.findByUsername('user')) {
+      def u = new User(username: 'user', password: 'password', roles: ['ROLE_USER'])
+      u.save()
+    }
 
     UserRole.withSession {
       it.flush()
       it.clear()
     }
 
-    assert User.count() == 1
+    assert User.count() == 2
     assert Role.count() == 2
-    assert UserRole.count() == 1
+    assert UserRole.count() == 3
   }
 
   def destroy = {

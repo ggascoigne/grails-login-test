@@ -12,8 +12,7 @@ class UserRole implements Serializable {
 
   private static final long serialVersionUID = 1
 
-  User user
-  Role role
+  static belongsTo = [user: User, role: Role]
 
   @Override
   boolean equals(other) {

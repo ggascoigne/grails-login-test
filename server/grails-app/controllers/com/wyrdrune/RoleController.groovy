@@ -1,8 +1,11 @@
 package com.wyrdrune
 
 import grails.validation.ValidationException
+import grails.plugin.springsecurity.annotation.Secured
+
 import static org.springframework.http.HttpStatus.*
 
+@Secured('ROLE_ADMIN')
 class RoleController {
 
   RoleService roleService

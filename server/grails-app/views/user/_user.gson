@@ -5,6 +5,6 @@ model {
   User user
 }
 
-json g.render(user, [resolveTemplate: false, excludes: ['password']]) {
-  roles user.getAuthorities().collect{ Role role -> role.authority}
+json g.render(user, [resolveTemplate: false, excludes: ['password', 'roles']]) {
+  roles user.getAuthorities().collect {Role role -> role.authority}
 }
