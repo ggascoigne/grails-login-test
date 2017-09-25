@@ -1,5 +1,12 @@
 # Grails & React
 
+Test project to investigate spring-security, spring-security-rest, jet and grails.
+
+## Current State ##
+
+The front end is bare, the backend has user and role rest endpoints (on `/api/user` and `/api/role`).  Reasonable test coverage.
+
+## Reference
 Created using the react profile, see:
 
 http://grailsblog.objectcomputing.com/posts/2016/11/14/introducing-the-react-profile-for-grails.html
